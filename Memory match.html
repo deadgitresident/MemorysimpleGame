@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      color: #333333;
+    }
+
+    #game-container {
+      margin-top: 50px;
+    }
+
+    .card {
+      width: 100px;
+      height: 150px;
+      background-color: #3399FF;
+      border-radius: 5px;
+      margin: 10px;
+      display: inline-block;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .card.flipped {
+      background-color: #FF3333;
+    }
+    
+    #timer {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Memory Match Game</h1>
+  <div id="game-container"></div>
+  <div id="timer">Time Remaining: 1:30</div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const timerElement = document.getElementById('timer');
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let remainingTime = 90; // 1.5 minutes in seconds
+    const cardValues = generateCardValues();
+
+    function generateCardValues() {
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      let cardValues = [];
+
+      for (let i = 0; i < alphabet.length; i++) {
+        cardValues.push(alphabet[i]);
+        cardValues.push(alphabet[i]);
+      }
+
+      return cardValues;
+    }
+
+    function resetGame() {
+      flippedCards = [];
+      matchedPairs = 0;
+      gameContainer.innerHTML = '';
+      shuffleCards();
+      resetTimer();
+    }
+
+    function shuffleCards() {
+      const randomIndices = [];
+
+      while (randomIndices.length < cardValues.length) {
+        const randomIndex = Math.floor(Math.random() * cardValues.length);
+
+        if (!randomIndices.includes(randomIndex)) {
+          randomIndices.push(randomIndex);
+        }
+      }
+
+      for (let i = 0; i < cardValues.length; i++) {
+        const cardValue = cardValues[randomIndices[i]];
+        const card = createCard(cardValue);
+        gameContainer.appendChild(card);
+      }
+    }
+
+    function createCard(value) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.textContent = value;
+
+      card.addEventListener('click', function () {
+        handleCardClick(this);
+      });
+
+      return card;
+    }
+
+    function handleCardClick(card) {
+      if (card.classList.contains('flipped') || flippedCards.length === 2) {
+        return;
+      }
+
+      card.classList.add('flipped');
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        checkMatch();
+      }
+    }
+
+    function checkMatch() {
+      const card1 = flippedCards[0];
+      const card2 = flippedCards[1];
+
+      if (card1.textContent === card2.textContent) {
+        matchedPairs++;
+        flippedCards = [];
+
+        if (matchedPairs === cardValues.length / 2) {
+          setTimeout(function () {
+            alert('Congratulations! You found all the matching pairs.');
+            resetGame();
+          }, 500);
+        }
+      } else {
+        setTimeout(function () {
+          card1.classList.remove('flipped');
+          card2.classList.remove('flipped');
+          flippedCards = [];
+        }, 1000);
+      }
+    }
+
+    function startTimer() {
+      timerElement.textContent = formatTime(remainingTime);
+
+      const timer = setInterval(function () {
+        remainingTime--;
+
+        if (remainingTime <= 0) {
+          clearInterval(timer);
+          alert('Time is up! Game Over.');
+          resetGame();
+        }
+
+        timerElement.textContent = formatTime(remainingTime);
+      }, 1000);
+    }
+
+    function resetTimer() {
+      remainingTime = 90; // Reset timer to 1.5 minutes
+    }
+
+    function formatTime(time) {
+      const minutes = Math.floor(time / 60);
+      const seconds = time % 60;
+
+      const formattedMinutes = String(minutes).padStart(2, '0');
+      const formattedSeconds = String(seconds).padStart(2, '0');
+
+      return `${formattedMinutes}:${formattedSeconds}`;
+    }
+
+    resetGame();
+    startTimer();
+  </script>
+</body>
+</html>
+
+
